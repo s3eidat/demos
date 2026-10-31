@@ -7,8 +7,9 @@
 <title>Handel Street Motors · MOT & repairs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Public+Sans:wght@400;600;700&family=Saira+Condensed:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Public+Sans:wght@400;600;700&family=Saira+Condensed:wght@700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="https://images.pexels.com/videos/4488715/pexels-photo-4488715.jpeg?auto=compress&cs=tinysrgb&w=1600">
+<script>try{if(sessionStorage.getItem('intro')||matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('seen')}catch(e){}</script>
 <style>
 :root{ --bg:#0E1114;--ink:#EEF0F0;--muted:#9AA3AA;--line:#262C31;--panel:#161B20;--accent:#F7C600;--on-accent:#111;
       --body:"Public Sans",system-ui,sans-serif;
@@ -89,6 +90,32 @@ h2.h{font:var(--display-font);font-size:clamp(40px,6vw,76px);letter-spacing:var(
 .map{width:100%;aspect-ratio:4/3;border:0;border-radius:18px;filter:var(--map-filter)}
 footer{padding:40px 0 70px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
 
+/* intro: name words drift together while the counter runs */
+.pre{position:fixed;inset:0;z-index:60;background:#0B0D0F;color:#F2F2EE;display:flex;flex-direction:column;justify-content:space-between;padding:22px;overflow:hidden}
+html.seen .pre{display:none}
+.pre-top{display:flex;justify-content:space-between;gap:16px;font:var(--eyebrow-font);letter-spacing:.16em;text-transform:uppercase;opacity:.65}
+.pre-name{display:flex;justify-content:center;gap:14vw;white-space:nowrap;font:var(--display-font);font-size:clamp(34px,6.5vw,92px);letter-spacing:var(--display-track);text-transform:var(--display-case)}
+.pre-name span{display:inline-block}
+.pre-n{align-self:flex-end;font:var(--display-font);font-size:clamp(64px,13vw,170px);line-height:.8;font-variant-numeric:tabular-nums}
+
+/* HUD readout over the film */
+.hud{position:absolute;top:86px;left:22px;z-index:3;color:#fff;font:500 12px/1.55 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;background:rgba(10,12,14,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:12px 14px;min-width:260px}
+.hud-t{display:flex;justify-content:space-between;gap:16px;opacity:.75;margin-bottom:8px}
+.hud-t i{font-style:normal;color:#FF5A4E;animation:rec 1.2s steps(2) infinite}
+@keyframes rec{50%{opacity:0}}
+.hud dl{display:grid;gap:2px}
+.hud dl div{display:flex;justify-content:space-between;gap:22px}
+.hud dt{opacity:.7}
+.hud dd{margin:0;font-variant-numeric:tabular-nums}
+.hud dd.ok::after{content:" \2713";color:#6BD49A}
+.hud-s{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.16)}
+@media (max-width:520px){.hud{top:66px;left:12px;font-size:10px;min-width:0;padding:9px 11px}.pre-name{gap:8vw;flex-wrap:wrap;white-space:normal;row-gap:.05em;font-size:30px}.pre-top{font-size:10px}}
+
+/* ticker band */
+.ticker{position:relative;z-index:2;overflow:hidden;background:var(--accent);color:var(--on-accent);transform:rotate(-1.6deg) scale(1.04);margin:36px 0 0;padding:14px 0}
+.tk-track{display:flex;width:max-content;will-change:transform}
+.tk-track span{font:var(--display-font);font-size:clamp(28px,4.2vw,56px);letter-spacing:var(--display-track);text-transform:var(--display-case);white-space:nowrap;padding-right:.4em}
+
 /* SplitText masks: leave room for descenders */
 .word-mask,.line-mask{padding-bottom:.22em;margin-bottom:-.22em}
 @media (max-width:520px){.nav .num{display:none}.mark{font-size:18px}.nav{padding:14px 16px}}
@@ -128,6 +155,11 @@ footer{padding:40px 0 70px;color:var(--muted);font-size:14px;border-top:1px soli
 </style>
 </head>
 <body>
+<div class="pre" id="pre" aria-hidden="true">
+  <div class="pre-top"><span>Bradford</span><span>MOT station · Servicing</span></div>
+  <div class="pre-name" id="pre-name"><span>Handel</span><span>Street</span><span>Motors</span></div>
+  <div class="pre-n" id="pre-n">0</div>
+</div>
 <div class="demo">Free demo website made for Handel Street Motors by Omar. It's not their official site. <a href="mailto:s3eidat@gmail.com?subject=Handel%20Street%20Motors%20website">Want it live? Get in touch</a></div>
 
 <nav class="nav" id="nav">
@@ -153,10 +185,13 @@ footer{padding:40px 0 70px;color:var(--muted);font-size:14px;border-top:1px soli
       <p class="big split" style="font-size:clamp(54px,9vw,128px)">Book your MOT.</p>
       <div class="ctas"><a class="call" href="tel:+441274393219">Call 01274 393219</a><a class="ghost" href="#visit">Find us</a></div>
     </div>
+    <div class="hud" id="hud" aria-hidden="true"><p class="hud-t"><span>MOT test · Bay 1</span><i>● REC</i></p><dl><div><dt>Brake eff.</dt><dd data-from="0" data-to="68" data-dec="0" data-suf="%">0%</dd></div><div><dt>Emissions CO</dt><dd data-from="4.5" data-to="0.12" data-dec="2" data-suf="%">4.50%</dd></div><div><dt>Tyre tread</dt><dd data-from="0" data-to="4.2" data-dec="1" data-suf="mm">0.0mm</dd></div><div><dt>Beam align</dt><dd data-from="0" data-to="100" data-dec="0" data-suf="%">0%</dd></div></dl><p class="hud-s">Status: <b id="hud-status" data-pass="PASS">Testing…</b></p></div>
     <div class="hint" id="hint">Scroll</div>
     <div class="bar" id="bar"></div>
   </div>
 </section>
+
+<div class="ticker" aria-hidden="true"><div class="tk-track" id="tk"><span>MOT testing ✦ Servicing ✦ Brakes & suspension ✦ Diagnostics ✦ 4.3★ on Google ✦ Bradford ✦ MOT testing ✦ Servicing ✦ Brakes & suspension ✦ Diagnostics ✦ 4.3★ on Google ✦ Bradford ✦ </span><span>MOT testing ✦ Servicing ✦ Brakes & suspension ✦ Diagnostics ✦ 4.3★ on Google ✦ Bradford ✦ MOT testing ✦ Servicing ✦ Brakes & suspension ✦ Diagnostics ✦ 4.3★ on Google ✦ Bradford ✦ </span></div></div>
 
 <section class="plate-sec"><div class="wrap">
   <h2 class="h rise">MOT due?<br>Start with your reg.</h2>
@@ -225,6 +260,7 @@ footer{padding:40px 0 70px;color:var(--muted);font-size:14px;border-top:1px soli
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrambleTextPlugin.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script>
 (()=>{
@@ -240,10 +276,13 @@ function fallback(){
   $('#iris').style.clipPath='none'; $('#iris-copy').classList.add('on');
   if(!reduce){film.loop=true;film.play().catch(()=>{});}
   $$('[data-count]').forEach(b=>b.textContent=b.dataset.count);
+  $('#pre').style.display='none';
+  $$('#hud dd').forEach(dd=>{dd.textContent=(+dd.dataset.to).toFixed(+dd.dataset.dec)+dd.dataset.suf;dd.classList.add('ok')});
+  $('#hud-status').textContent=$('#hud-status').dataset.pass;
 }
 
 function motion(){
-  gsap.registerPlugin(ScrollTrigger,SplitText);
+  gsap.registerPlugin(ScrollTrigger,SplitText,...(window.ScrambleTextPlugin?[ScrambleTextPlugin]:[]));
 
   // weighted smooth scrolling, driven by GSAP's ticker so the scrub never stutters
   if(window.Lenis && !touch){
@@ -251,6 +290,20 @@ function motion(){
     lenis.on('scroll',ScrollTrigger.update);
     gsap.ticker.add(t=>lenis.raf(t*1000)); gsap.ticker.lagSmoothing(0);
     $$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href');if(id.length>1){e.preventDefault();lenis.scrollTo(id,{duration:1.6})}}));
+  }
+
+  // ---- intro: counter to 100 while the name pulls together, then the curtain lifts
+  const pre=$('#pre'); let heroDelay=0;
+  if(getComputedStyle(pre).display!=='none'){
+    window.lenis&&lenis.stop();
+    const n={v:0}, num=$('#pre-n');
+    const intro=gsap.timeline()
+      .from('#pre-name span',{yPercent:110,autoAlpha:0,stagger:.08,duration:.8,ease:'power3.out'},0)
+      .fromTo('#pre-name',{gap:innerWidth<520?'8vw':'14vw'},{gap:'0.28em',duration:1.5,ease:'expo.inOut'},0)
+      .to(n,{v:100,duration:1.5,ease:'power2.inOut',onUpdate:()=>num.textContent=Math.round(n.v)},0)
+      .to(pre,{yPercent:-100,duration:1,ease:'expo.inOut'},'+=.15')
+      .add(()=>{pre.style.display='none';window.lenis&&lenis.start();try{sessionStorage.setItem('intro','1')}catch(e){}});
+    heroDelay=intro.duration()-.55;
   }
 
   // ---- the film: video time, captions and the final shrink all hang off one scrubbed timeline
@@ -271,8 +324,8 @@ function motion(){
 
   // caption 1 lands on load, then each caption owns a slice of the scroll
   gsap.set(caps[0],{autoAlpha:1});
-  gsap.from(words[0],{yPercent:115,duration:1.2,stagger:.07,ease:'expo.out',delay:.25});
-  gsap.from(caps[0].querySelector('.eyebrow'),{autoAlpha:0,y:12,duration:1,delay:.15});
+  gsap.from(words[0],{yPercent:115,duration:1.2,stagger:.07,ease:'expo.out',delay:heroDelay+.25});
+  gsap.from(caps[0].querySelector('.eyebrow'),{autoAlpha:0,y:12,duration:1,delay:heroDelay+.15});
   const win=[[0,2.9],[3.1,6.1],[6.3,10]];
   caps.forEach((c,i)=>{
     const [a,b]=win[i], rest=c.querySelectorAll('.small,.ctas,.eyebrow');
@@ -285,7 +338,28 @@ function motion(){
   });
   tl.to('#frame',{scale:.87,borderRadius:30,duration:1.7,ease:'power2.inOut'},8.3);
 
-  ScrollTrigger.create({trigger:'#cine',start:'bottom 70px',onEnter:()=>nav.classList.add('solid'),onLeaveBack:()=>nav.classList.remove('solid')});
+  // HUD: each reading runs as you scroll, then the verdict scrambles in
+  gsap.from('#hud',{autoAlpha:0,x:-24,duration:.9,ease:'power3.out',delay:heroDelay+.7});
+  $$('#hud dd').forEach((dd,i)=>{
+    const to=+dd.dataset.to, from=+dd.dataset.from, dec=+dd.dataset.dec, suf=dd.dataset.suf, o={v:from};
+    const show=()=>{dd.textContent=o.v.toFixed(dec)+suf;dd.classList.toggle('ok',Math.abs(o.v-to)<Math.pow(10,-dec)/2)};
+    show(); tl.to(o,{v:to,duration:1.5,onUpdate:show},.3+i*1.6);
+  });
+  const st=$('#hud-status');
+  if(window.ScrambleTextPlugin) tl.to(st,{duration:.9,scrambleText:{text:st.dataset.pass,chars:'XO#/+-',speed:.5}},7.1);
+  tl.fromTo(st,{color:'#ffffff'},{color:'#6BD49A',duration:.3},7.9).to('#hud',{autoAlpha:0,y:-10,duration:.5},9.2);
+
+  // ---- ticker: drifts on its own, whips along (or backwards) with scroll speed
+  const loop=gsap.to('#tk',{xPercent:-50,repeat:-1,duration:26,ease:'none'});
+  loop.totalTime(26*400);
+  let settle;
+  ScrollTrigger.create({start:0,end:'max',onUpdate(self){
+    const v=self.getVelocity(), d=v<0?-1:1;
+    loop.timeScale(d*(1+Math.min(Math.abs(v)/220,7)));
+    settle&&settle.kill(); settle=gsap.to(loop,{timeScale:d,duration:1.1,ease:'power2.out'});
+  }});
+
+  ScrollTrigger.create({trigger:'#cine',start:'bottom bottom',onEnter:()=>nav.classList.add('solid'),onLeaveBack:()=>nav.classList.remove('solid')});
 
   // ---- second film opens through an iris
   const irisWords=SplitText.create('#iris-copy h2',{type:'words',mask:'words'}).words;
